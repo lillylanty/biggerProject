@@ -1,0 +1,16 @@
+node_modules/
+*.txt
+dist/
+*config.js
+*.log
+*.lock
+.editorconfig
+package-lock.json
+idea/
+/.vscode/
+compiler_ts/*
+.history/
+true?{\"compact\":false}/
+*.DS_Store
+*.idea
+static*
