@@ -9,7 +9,6 @@ global.DISABLE_SSR = false;
 
 if(process.env.NODE_ENV === 'production'){
     global.webpackIsomorphicTools = new WebpackIsomorphicTools(require('../webpack-isomorphic-tools'))
-
     .server(rootDir, function(){
         requier('../build/server')
     })

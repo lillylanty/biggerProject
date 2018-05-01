@@ -45,3 +45,55 @@ universal 渲染的服务端指的是前端服务器，尽管可以在前端服�
 
 
 writting untill now ,it had been proved that the shortness of server  & node related knowledges prevented next learning step. such a huge & high fence standing there!!!
+
+
+#生产环境下的构建编译
+开发环境下的构建编译，比如使用RequireHook 来运行需要的babel 编译node程序，使用开发服务器来打包客户端的各种资源，但这些构建编译只是方便了开发，在生产环境下会引起包括内存消耗过大在内的各方面问题。所以需要考虑性能问题。
+## 5.编译运行node.js
+在生产环境下，应先使用babel编译node程序，然后使用node运行。
+先删除上次编译的老旧文件，用node的删除工具rimraf，这里不仅删除了build文件夹，也删除了webpack的目标路径，及static/dist文件夹
+``` "clean": "rimraf build static/dist"  ```
+然后使用babel编译。src代表源文件目录，-d build代表目标路径为build,--copy-files代表将非js文件也拷贝到目标文件夹中
+``` "build-server":"babel src -d build --copy-files"  ```
+最后直接用node运行
+``` 
+    "start-prod":"cross-env BNODE_ENV=production node bin/server"
+
+
+    "start-api-prod": "cross-env NODE_ENV=production node bin/api"
+```
+在生产环境下，入口文件已经发生了改变
+看 bin/server.js
+``` 
+if(process.env.NODE_ENV === 'production'){
+    global.webpackIsomorphicTools = new WebpackIsomorphicTools(require('../webpack-isomorphic-tools'))
+    .server(rootDir, function(){
+        requier('../build/server')
+    })
+
+}
+```
+bin/api.js
+```
+if(process.env.NODE_ENV === 'production'){
+    requier('../build/api/api');
+}
+```
+开发环境依然使用的Require Hook.
+## 6.生产环境下的wp配置
+在生产环境中，不需要使用开发服务器来提供资源，而是直接将其打包到静态资源目录，然后在页面中引入入口文件即可。
+看 webpack/prod.config.js
+
+然后   
+编写npm命令，
+```
+"prod":"npm run build && concurrently -k \"npm run start-api-prod\" \"npm run start-prod\"",
+
+"dev":"concurrently -k \"npm run watch-client\" \"npm run start-api-dev\" \"npm run start-dev\"",
+
+```
+concurrently可以让多条命令平行启动
+
+##公用代码
+#### 工具集
+为了目录的简约，将html组件函数、配置store的函数以及其他工具函数都放在了src/utils下，因为他们并不涉及逻辑。
